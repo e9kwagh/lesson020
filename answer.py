@@ -91,34 +91,32 @@ def generate_payment_report(filename):
 
 def print_reports():
     """print report"""
-    with open("lodger", "r", encoding="utf-8") as f:
-        data = csv.DictReader(f)
-        months = []
-        setup_data = {}
+    data = read_ledger("ledger.csv")
+    months = []
+    setup_data = {}
 
-        for record in data:
-            N_date = datetime.strptime(record["date"], "%Y-%m-%d %H:%M:%S")
-            month = N_date.strftime("%B")
-            category = record["category"]
-            months.append(month)
-            N_months = sorted(set(months))
+    for record in data:
+        N_date = datetime.strptime(record["date"], "%Y-%m-%d %H:%M:%S")
+        month = N_date.strftime("%B")
+        category = record["category"]
+        months.append(month)
+        N_months = sorted(set(months))
 
-            if category not in setup_data:
-                setup_data[category] = {}
-            if month not in setup_data[category]:
-                setup_data[category][month] = 0
-            setup_data[category][month] += float(record["amount"])
+        if category not in setup_data:
+            setup_data[category] = {}
+        if month not in setup_data[category]:
+            setup_data[category][month] = 0
+        setup_data[category][month] += float(record["amount"])
 
-        months = sorted(set(months))
-        total = "\t".join(["Category"] + months)
-       
-        for category, month_data in setup_data.items():
-            values = [f"{month_data.get(month, 0):.2f}" for month in months]
-            total += "\t".join([category] + values)
+    months = sorted(set(months))
+    total = "\t".join(["Category"] + months)
+    
+    for category, month_data in setup_data.items():
+        values = [f"{month_data.get(month, 0):.2f}" for month in months]
+        total += "\t".join([category] + values)
 
     return total
 
-# ... (rest of your code remains the same)
 
 
 def generate_random_data():
