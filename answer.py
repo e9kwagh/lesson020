@@ -8,38 +8,39 @@ def ledger(date,category, desc, mode_of_payment,amount):
     """ledger"""
     with open("ledger.csv", "a", encoding="utf-8") as f:
         values = {
-            "date": date,
-            "amount": amount,         
-            "category": category,
-            "desc": desc,
-            "mode_of_payment": mode_of_payment,
-            
-        }
+        "date": date,
+        "category": category,
+        "desc": desc,
+        "mode_of_payment": mode_of_payment,
+        "amount": amount,
+            }
         write = csv.DictWriter(f, fieldnames=values.keys())
+        if f.tell() == 0:
+            write.writeheader()
         write.writerow(values)
 
 def read_ledger(filename):
     """read_ledger"""
     with open(filename, "r", encoding="utf-8") as f:
         read = csv.DictReader(f)
-        return read
-        # cleaned_data = [{k: v.replace(',', '') for k, v in record.items()} for record in read]
-        # return cleaned_data
-      
+    return read
+# cleaned_data = [{k: v.replace(',', '') for k, v in record.items()} for record in read]
+# return cleaned_data
+
 
 
 def credit(amount):
     """credit"""
     data = read_ledger("ledger.csv")
-    current_balance = data[-1][amount] 
+    current_balance = data[-1][amount]
     return float(current_balance+ amount)
-    
+
 
 
 def debit(amount):
     """debit"""
     data = read_ledger("ledger.csv")
-    current_balance = data[-1][amount] 
+    current_balance = data[-1][amount]
     return float(current_balance - amount)
 
 def transaction(amount, category, desc, mode_of_payment, credit=False):
@@ -48,37 +49,42 @@ def transaction(amount, category, desc, mode_of_payment, credit=False):
         amount = credit(amount)
         ledger(amount, category, desc, mode_of_payment)
         return f'{amount} amount credited '
-    
+
     amount = debit(amount)
     ledger(amount, category, desc, mode_of_payment)
     return f'{amount} amount debited '
 
 
-def generate_category_report(filename):
-    """genearte"""
-    with open(filename, "r", encoding="utf-8") as f:
-        data = csv.DictReader(f)
-        
+import csv
 
-    value = ["date","category","desc","amount"]
-    up_data = [{ keys :i[keys]  for keys in value  }  for i in data]
-    
-    with open("category.csv","a",encoding="utf-8") as f:
-        writer = csv.DictWriter("category.csv" ,fieldnames=value)
+def generate_category_report(filename):
+    """generate"""
+    with open(filename, "r", encoding="utf-8") as f:
+        data = list(csv.DictReader(f))
+   
+    value = ["date", "category", "desc", "amount"]
+    up_data = [{keys: i[keys] for keys in value} for i in data]
+
+    with open("category.csv", "a", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=value)
         writer.writeheader()
-        writer.header()
         writer.writerows(up_data)
+
     return "category.csv"
+
+# Call the function and print the result
+result_filename = generate_category_report("ledger.csv")
+print(f"Category report generated: {result_filename}")
 
 def generate_payment_report(filename):
     """payment"""
-    with open(filename, "r", encoding="utf-8") as f:
-        data = csv.DictReader(f)
-        
+    # with open(filename, "r", encoding="utf-8") as f:
+    #     data = csv.DictReader(f)
+    data = read_ledger("ledger.csv")
 
     value = ["date","mode_of_payment","amount","desc"]
-    up_data = [{ keys :i[keys]  for keys in value  }  for i in data]
-    
+    up_data = [{ keys :i[keys] for keys in value } for i in data]
+
     with open("payment.csv","w",encoding="utf-8") as f:
         writer = csv.DictWriter("payment.csv" ,fieldnames=value)
         writer.writeheader()
@@ -89,35 +95,44 @@ def generate_payment_report(filename):
 
 
 
+
+import csv
+
+import csv
+
 def print_reports():
-    """print report"""
-    data = read_ledger("ledger.csv")
-    months = []
+    months = {}
     setup_data = {}
-
-    for record in data:
-        N_date = datetime.strptime(record["date"], "%Y-%m-%d %H:%M:%S")
-        month = N_date.strftime("%B")
-        category = record["category"]
-        months.append(month)
-        N_months = sorted(set(months))
-
-        if category not in setup_data:
-            setup_data[category] = {}
-        if month not in setup_data[category]:
-            setup_data[category][month] = 0
-        setup_data[category][month] += float(record["amount"])
-
-    months = sorted(set(months))
-    total = "\t".join(["Category"] + months)
     
-    for category, month_data in setup_data.items():
-        values = [f"{month_data.get(month, 0):.2f}" for month in months]
-        total += "\t".join([category] + values)
+    map_month = {
+        "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr",
+        "05": "May", "06": "Jun", "07": "Jul", "08": "Aug",
+        "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"
+    }
 
-    return total
+    with open("ledger.csv", "r", encoding="utf-8") as f:
+        read = list(csv.DictReader(f))
+        categories = sorted(set([i["category"] for i in read]))
+        in_cat = {category: {data["date"]: int(data["amount"]) for data in read if category == data["category"]} for category in categories}
 
+    for category, data in in_cat.items():
+        for date, amount in data.items():
+            month, year = date.split('-')[1], date.split('-')[0] 
+            m_year = f"{map_month.get(month, 'Jan')}/{year}"  
+            if category not in months:
+                months[category] = {}
+            if m_year not in months[category]:
+                months[category][m_year] = 0
+            months[category][m_year] += amount
 
+    result = ""
+    header = ["Category"] + sorted(set(m_year for data in months.values() for m_year in data))
+    result += '\t'.join(header) + '\n'
+    for category, data in months.items():
+        row = [category] + [str(data.get(m_year, 0)) for m_year in header[1:]]
+        result += '\t'.join(row) + '\n'
+    
+    return result
 
 def generate_random_data():
     """rndom"""
@@ -130,16 +145,11 @@ def generate_random_data():
         category = random.choice(categories)
         desc = random.choice(descriptions)
         mode_of_payment = random.choice(modes_of_payment)
+        year = random.randrange(2020, 2024)
+        month = random.randrange(0,13)
+        day = random.randrange(1,29)
 
-        ledger(
-            datetime.now().strftime("%Y-%m-%d"),
-            amount,     
-            category,
-            desc,
-            mode_of_payment,
-            
-        )
-
+        ledger( f'{year}-{month}-{day}',category,desc,mode_of_payment,amount)
 
 
 def generate_txt(report_data):
@@ -150,14 +160,12 @@ def generate_txt(report_data):
             file.write(f"{category}\t{amounts_str}\n")
 
 
-# if __name__ == "__main__" :
-#     print(generate_category_report("catogires.csv"))
-    
+
 if __name__ == "__main__":
     generate_random_data()
     report_data = print_reports()
-    print_reports()
     generate_category_report("ledger.csv")
     generate_txt(report_data)
     print(credit(4000))
     print(debit(2000))
+    print(print_reports())
