@@ -72,7 +72,7 @@ def generate_category_report(filename):
 
     return "category.csv"
 
-# Call the function and print the result
+
 result_filename = generate_category_report("ledger.csv")
 print(f"Category report generated: {result_filename}")
 
@@ -92,13 +92,6 @@ def generate_payment_report(filename):
         writer.writerows(up_data)
     return "payment.csv"
 
-
-
-
-
-import csv
-
-import csv
 
 def print_reports():
     months = {}
