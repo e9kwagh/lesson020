@@ -55,7 +55,7 @@ def transaction(amount, category, desc, mode_of_payment, credit=False):
     return f'{amount} amount debited '
 
 
-import csv
+
 
 def generate_category_report(filename):
     """generate"""
@@ -73,8 +73,7 @@ def generate_category_report(filename):
     return "category.csv"
 
 
-result_filename = generate_category_report("ledger.csv")
-print(f"Category report generated: {result_filename}")
+
 
 def generate_payment_report(filename):
     """payment"""
@@ -95,7 +94,7 @@ def generate_payment_report(filename):
 
 def print_reports():
     months = {}
-    setup_data = {}
+  
     
     map_month = {
         "01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr",
@@ -157,8 +156,8 @@ def generate_txt(report_data):
 if __name__ == "__main__":
     generate_random_data()
     report_data = print_reports()
-    generate_category_report("ledger.csv")
-    generate_txt(report_data)
+    # generate_category_report("ledger.csv")
+    # generate_txt(report_data)
     print(credit(4000))
     print(debit(2000))
     print(print_reports())
